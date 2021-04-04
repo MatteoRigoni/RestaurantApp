@@ -1,0 +1,50 @@
+services:
+  db:
+    environment:
+      ACCEPT_EULA: "Y"
+      SA_PASSWORD: Sample123
+    image: mcr.microsoft.com/mssql/server
+    ports:
+    - published: 1433
+      target: 1433
+    volumes:
+    - C:\DockerVolumes:/var/opt/mssql/data:rw
+  webapi:
+    build:
+      context: C:\Users\matte\source\repos\restaurant-app
+      dockerfile: webapi/Dockerfile
+      labels:
+        com.microsoft.created-by: visual-studio
+        com.microsoft.visual-studio.project-name: webapi
+      target: base
+    container_name: webapi
+    depends_on:
+      db:
+        condition: service_started
+    entrypoint: tail -f /dev/null
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ASPNETCORE_LOGGING__CONSOLE__DISABLECOLORS: "true"
+      DOTNET_USE_POLLING_FILE_WATCHER: '1'
+      NUGET_FALLBACK_PACKAGES: ''
+    image: webapi:dev
+    labels:
+      com.microsoft.visualstudio.debuggee.arguments: ' --additionalProbingPath /root/.nuget/packages  "/app/bin/Debug/netcoreapp3.1/webapi.dll"'
+      com.microsoft.visualstudio.debuggee.killprogram: /bin/sh -c "if PID=$$(pidof
+        dotnet); then kill $$PID; fi"
+      com.microsoft.visualstudio.debuggee.program: dotnet
+      com.microsoft.visualstudio.debuggee.workingdirectory: /app
+    ports:
+    - published: 4001
+      target: 80
+    - published: 4000
+      target: 443
+    tty: true
+    volumes:
+    - C:\Users\matte\source\repos\restaurant-app\webapi:/app:rw
+    - C:\Users\matte\vsdbg\vs2017u5:/remote_debugger:rw
+    - C:\Users\matte\AppData\Roaming\ASP.NET\Https:/root/.aspnet/https:ro
+    - C:\Users\matte\AppData\Roaming\Microsoft\UserSecrets:/root/.microsoft/usersecrets:ro
+    - C:\Users\matte\.nuget\packages:/root/.nuget/packages:ro
+    - C:\Users\matte\source\repos\restaurant-app:/src:rw
+version: '3.4'

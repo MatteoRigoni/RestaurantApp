@@ -1,0 +1,34 @@
+services:
+  db:
+    environment:
+      ACCEPT_EULA: "Y"
+      SA_PASSWORD: Sample123
+    image: mcr.microsoft.com/mssql/server
+    ports:
+    - published: 1433
+      target: 1433
+    volumes:
+    - C:\DockerVolumes:/var/opt/mssql/data:rw
+  webapi:
+    build:
+      context: C:\Users\matte\source\repos\restaurant-app
+      dockerfile: webapi/Dockerfile
+    depends_on:
+      db:
+        condition: service_started
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+    image: webapi
+    ports:
+    - published: 4000
+      target: 80
+    - published: 4001
+      target: 80
+    - published: 4001
+      target: 443
+    - published: 4000
+      target: 443
+    volumes:
+    - C:\Users\matte\AppData\Roaming\ASP.NET\Https:/root/.aspnet/https:ro
+    - C:\Users\matte\AppData\Roaming\Microsoft\UserSecrets:/root/.microsoft/usersecrets:ro
+version: '3.4'
